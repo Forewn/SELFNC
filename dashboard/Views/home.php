@@ -1,5 +1,14 @@
 <?php
+
+  session_start();
+  if(isset($_SESSION['id'])){
+    header('Location: admin/pages-admin.php');
+  }
+
+
   require '../Config/Config.php';
+
+
 
   if(isset($_POST['login'])) {
     $errMsg = '';

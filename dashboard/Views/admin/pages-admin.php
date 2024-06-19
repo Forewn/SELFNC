@@ -25,7 +25,7 @@
       <div class="card-counter danger">
         <i class="material-icons">psychology</i>
          <?php 
-        $sql = "SELECT COUNT(*) total FROM teachers";
+        $sql = "SELECT COUNT(*) total FROM profesores";
         $result = $connect->query($sql); //$pdo sería el objeto conexión
         $total = $result->fetchColumn();
 
@@ -39,7 +39,7 @@
       <div class="card-counter success">
         <i class="material-icons">supervisor_account</i>
          <?php 
-        $sql = "SELECT COUNT(*) total FROM padres";
+        $sql = "SELECT COUNT(*) total FROM representante_legal";
         $result = $connect->query($sql); //$pdo sería el objeto conexión
         $total = $result->fetchColumn();
 
@@ -87,7 +87,7 @@
 
         
         <?php  
-        $sentencia = $connect->query("SELECT * FROM estudiantes ORDER BY dnist ASC LIMIT 3;");
+        $sentencia = $connect->query("SELECT * FROM estudiantes ORDER BY cedula_estudiante ASC LIMIT 3;");
         $personas = $sentencia->fetchAll(PDO::FETCH_OBJ);
 
         ?>
@@ -101,11 +101,11 @@
             <tbody>
                 <?php foreach($personas as $persona){ ?>
                 <tr>
-                    <td><?php echo $persona->nomstu ?></td>
+                    <td><?php echo $persona->nombres?></td>
                     <td>
                        
 
-                        <?php if($persona->state==1)  { ?> 
+                        <?php if($persona->status==1)  { ?> 
         <span class="badge badge-success">Estudiando</span>
 
     <?php  }   else {?> 
@@ -130,7 +130,7 @@
 
      
         <?php  
-        $sentencia = $connect->query("SELECT * FROM teachers ORDER BY dnite ASC LIMIT 3;");
+        $sentencia = $connect->query("SELECT * FROM profesores ORDER BY cedula_profesor ASC LIMIT 3;");
         $personas = $sentencia->fetchAll(PDO::FETCH_OBJ);
 
         ?>
@@ -138,23 +138,12 @@
             <thead class="thead-dark">
                 <tr>   
                     <th>Apellidos/Nombres</th>
-                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach($personas as $persona){ ?>
                 <tr>
-                    <td><?php echo $persona->nomte ?></td>
-                    <td>
-                       
-
-                        <?php if($persona->state==1)  { ?> 
-        <span class="badge badge-success">Participa</span>
-    <?php  }   else {?> 
-        <span class="badge badge-danger">No participa</span>
-        <?php  } ?>  
-                            
-                    </td>
+                    <td><?php echo $persona->nombre ?></td>
                 </tr>
                 <?php } ?>
             </tbody>
@@ -181,8 +170,8 @@
               <?php
 
 $hoy = date("m");
-$fecha_cumple = $persona->fenac;
-$nomstu = $persona->nomstu;
+$fecha_cumple = $persona->fecha_nac;
+$nomstu = $persona->nombres;
 
 
 $dianac = date('d', strtotime($fecha_cumple));

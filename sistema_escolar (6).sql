@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-06-2024 a las 11:24:24
+-- Tiempo de generación: 18-06-2024 a las 15:55:07
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -24,24 +24,25 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `años`
+-- Estructura de tabla para la tabla `anios`
 --
 
-CREATE TABLE `años` (
-  `id_año` int(11) NOT NULL,
-  `año` varchar(20) NOT NULL
+CREATE TABLE `anios` (
+  `id_anio` int(11) NOT NULL,
+  `anio` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `años`
+-- Volcado de datos para la tabla `anios`
 --
 
-INSERT INTO `años` (`id_año`, `año`) VALUES
+INSERT INTO `anios` (`id_anio`, `anio`) VALUES
 (1, '1ro'),
 (2, '2do'),
 (3, '3ro'),
 (4, '4to'),
-(5, '5to');
+(5, '5to'),
+(25, '6to');
 
 -- --------------------------------------------------------
 
@@ -82,7 +83,8 @@ CREATE TABLE `estudiantes` (
 --
 
 INSERT INTO `estudiantes` (`cedula_estudiante`, `nombres`, `fecha_nac`, `direccion`, `telefono`, `correo`, `genero`) VALUES
-(22222222, 'Daniel Parra', '2002-06-03', 'En el monte', '04247500250', 'parra@masters.com', 'M');
+(22222222, 'Daniel Parraa', '2002-06-03', 'En el monte', '04247500250', 'parra@masterss.com', 'M'),
+(23411333, 'DSADA', '2024-06-13', '2313', '2313131', 'asf@gmail.com', 'M');
 
 -- --------------------------------------------------------
 
@@ -114,16 +116,18 @@ CREATE TABLE `materias` (
   `id_materia` int(11) NOT NULL,
   `materia` varchar(45) NOT NULL,
   `id_tipo` int(11) NOT NULL,
-  `id_año` int(11) NOT NULL
+  `id_anio` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `materias`
 --
 
-INSERT INTO `materias` (`id_materia`, `materia`, `id_tipo`, `id_año`) VALUES
-(1, 'Matematica', 1, 1),
-(2, 'Cultura', 2, 1);
+INSERT INTO `materias` (`id_materia`, `materia`, `id_tipo`, `id_anio`) VALUES
+(6, 'sadas', 1, 2),
+(15, 'Matematica', 1, 2),
+(17, 'Oftalmología', 1, 2),
+(18, 'Oftalmología', 1, 2);
 
 -- --------------------------------------------------------
 
@@ -140,14 +144,6 @@ CREATE TABLE `notas` (
   `nota_final` varchar(5) NOT NULL,
   `boletin_id_boletin` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `notas`
---
-
-INSERT INTO `notas` (`id_notas`, `id_profesor_materia_seccion`, `1er_lapso`, `2do_lapso`, `3er_lapso`, `nota_final`, `boletin_id_boletin`) VALUES
-(1, '1', 'A', 'C', 'B', 'B', 1),
-(2, '2', '10', '20', '20', '16.6', 1);
 
 -- --------------------------------------------------------
 
@@ -191,7 +187,10 @@ CREATE TABLE `periodo_academico` (
 --
 
 INSERT INTO `periodo_academico` (`id_periodo`, `nombre`, `fecha_inicio`, `fecha_fin`, `status`) VALUES
-(1, '2024-2025', '2024-09-16', '2025-06-13', 1);
+(0, 'FASDD', '2024-06-18', '2024-06-18', 1),
+(1, '2024-2027', '2024-09-16', '2025-06-13', 1),
+(2, 'DSADA', '2024-06-21', '2024-06-20', 1),
+(3, 'Pollo con pan2', '2024-06-06', '2024-06-03', 1);
 
 -- --------------------------------------------------------
 
@@ -213,9 +212,10 @@ CREATE TABLE `profesores` (
 --
 
 INSERT INTO `profesores` (`cedula_profesor`, `nombre`, `telefono`, `direccion`, `correo`, `genero`) VALUES
+(24141333, 'Pocoyo Rivera', '041234141654', '', 'FSAUAH@GMAIL.COM', 'F'),
+(29542512, 'FDASFADS', '041234521323', '', 'asdfa@gmail.com', 'M'),
 (29545423, 'Angelo Isaac Toscano', '04247500258', 'no tiene casa', 'aga@gmail.com', 'M'),
-(29699505, 'Jhosmar Suarez', '04247420767', 'sizarra ieja', 'a@gmail.com', 'M'),
-(30110969, 'Eliana Perez', '04147212442', 'Miau', 'notengo@gmail.com', 'F');
+(29699505, 'Jhosmar Suarez', '04247420767', 'sizarra ieja', 'a@gmail.com', 'F');
 
 -- --------------------------------------------------------
 
@@ -229,14 +229,6 @@ CREATE TABLE `profesores_materias` (
   `materias_id_materia` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `profesores_materias`
---
-
-INSERT INTO `profesores_materias` (`id_profesor_materia`, `profesores_cedula_profesor`, `materias_id_materia`) VALUES
-('1', 29545423, 2),
-('2', 29545423, 1);
-
 -- --------------------------------------------------------
 
 --
@@ -248,14 +240,6 @@ CREATE TABLE `profesor_materias_seccion` (
   `id_seccion` varchar(30) NOT NULL,
   `id_profesor_materia` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `profesor_materias_seccion`
---
-
-INSERT INTO `profesor_materias_seccion` (`id_profesor_materia_seccion`, `id_seccion`, `id_profesor_materia`) VALUES
-('1', '1', '1'),
-('2', '1', '2');
 
 -- --------------------------------------------------------
 
@@ -280,7 +264,7 @@ CREATE TABLE `representante_legal` (
 --
 
 INSERT INTO `representante_legal` (`cedula_representante_legal`, `nombre`, `telefono`, `correo`, `direccion`, `fecha_nac`, `sexo`, `id_parentezco`, `profesion`) VALUES
-(11111111, 'Papa de Parra', '11111111', 'papadeparra@eloriginal.com', 'en el mismo monte que parra', '1985-06-10', 'M', 2, 'No hay profesión como ser papa');
+(11111111, 'Papa de Parra3', '11111111', 'papadeparra2@eloriginal.com', 'en el mismo monte que parraofcoruse', '1985-06-10', 'M', 2, 'No hay profesión como ser papasda');
 
 -- --------------------------------------------------------
 
@@ -320,6 +304,7 @@ CREATE TABLE `seccion` (
 --
 
 INSERT INTO `seccion` (`id_seccion`, `id_año`, `letra`, `cedula_tutor`, `id_periodo`) VALUES
+('', 2, 'A', 29545423, 1),
 ('1', 1, 'U', 29545423, 1);
 
 -- --------------------------------------------------------
@@ -363,17 +348,17 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` (`id_usuario`, `usuario`, `password`, `status`, `id_rol`, `cedula_profesor`) VALUES
 (0, 'Elibook', '3d2172418ce305c7d16d4b05597c6a59', '1', 1, 30110969),
 (1, 'Aga222', '$2y$10$0yCDCMoInSgsgh1MojTcCOVB.8zdfYd9bqYKy0XxyfHreQkk32LCm', '1', 1, 29545423),
-(12, 'Forewn', 'b7bc2a2f5bb6d521e64c8974c143e9a0', '1', 2, 29699505);
+(13, 'edwe', 'e10adc3949ba59abbe56e057f20f883e', '1', 1, 29699505);
 
 --
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla `años`
+-- Indices de la tabla `anios`
 --
-ALTER TABLE `años`
-  ADD PRIMARY KEY (`id_año`);
+ALTER TABLE `anios`
+  ADD PRIMARY KEY (`id_anio`);
 
 --
 -- Indices de la tabla `boletin`
@@ -403,7 +388,7 @@ ALTER TABLE `inscripcion`
 ALTER TABLE `materias`
   ADD PRIMARY KEY (`id_materia`),
   ADD KEY `fk_materias_tipo_tabla1_idx` (`id_tipo`),
-  ADD KEY `id_año` (`id_año`);
+  ADD KEY `id_año` (`id_anio`);
 
 --
 -- Indices de la tabla `notas`
@@ -489,10 +474,22 @@ ALTER TABLE `usuarios`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `anios`
+--
+ALTER TABLE `anios`
+  MODIFY `id_anio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
 -- AUTO_INCREMENT de la tabla `inscripcion`
 --
 ALTER TABLE `inscripcion`
   MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `materias`
+--
+ALTER TABLE `materias`
+  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `notas`
@@ -510,7 +507,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Restricciones para tablas volcadas
@@ -534,29 +531,29 @@ ALTER TABLE `inscripcion`
 -- Filtros para la tabla `materias`
 --
 ALTER TABLE `materias`
-  ADD CONSTRAINT `fk_materias_tipo_tabla1` FOREIGN KEY (`id_tipo`) REFERENCES `tipo_materia` (`id_tipo`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `materias_ibfk_1` FOREIGN KEY (`id_año`) REFERENCES `años` (`id_año`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `materias_ibfk_1` FOREIGN KEY (`id_tipo`) REFERENCES `tipo_materia` (`id_tipo`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `materias_ibfk_2` FOREIGN KEY (`id_anio`) REFERENCES `anios` (`id_anio`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `notas`
 --
 ALTER TABLE `notas`
-  ADD CONSTRAINT `fk_boletin_profesor_materias_seccion1` FOREIGN KEY (`id_profesor_materia_seccion`) REFERENCES `profesor_materias_seccion` (`id_profesor_materia_seccion`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_notas_boletin1` FOREIGN KEY (`boletin_id_boletin`) REFERENCES `boletin` (`id_boletin`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_boletin_profesor_materias_seccion1` FOREIGN KEY (`id_profesor_materia_seccion`) REFERENCES `profesor_materias_seccion` (`id_profesor_materia_seccion`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_notas_boletin1` FOREIGN KEY (`boletin_id_boletin`) REFERENCES `boletin` (`id_boletin`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `profesores_materias`
 --
 ALTER TABLE `profesores_materias`
-  ADD CONSTRAINT `fk_profesores_has_materias_materias1` FOREIGN KEY (`materias_id_materia`) REFERENCES `materias` (`id_materia`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_profesores_has_materias_profesores1` FOREIGN KEY (`profesores_cedula_profesor`) REFERENCES `profesores` (`cedula_profesor`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_profesores_has_materias_materias1` FOREIGN KEY (`materias_id_materia`) REFERENCES `materias` (`id_materia`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_profesores_has_materias_profesores1` FOREIGN KEY (`profesores_cedula_profesor`) REFERENCES `profesores` (`cedula_profesor`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `profesor_materias_seccion`
 --
 ALTER TABLE `profesor_materias_seccion`
-  ADD CONSTRAINT `fk_materias/seccion_profesores/materias1` FOREIGN KEY (`id_profesor_materia`) REFERENCES `profesores_materias` (`id_profesor_materia`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_materias_has_seccion_seccion1` FOREIGN KEY (`id_seccion`) REFERENCES `seccion` (`id_seccion`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_materias/seccion_profesores/materias1` FOREIGN KEY (`id_profesor_materia`) REFERENCES `profesores_materias` (`id_profesor_materia`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_materias_has_seccion_seccion1` FOREIGN KEY (`id_seccion`) REFERENCES `seccion` (`id_seccion`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `representante_legal`
@@ -568,7 +565,7 @@ ALTER TABLE `representante_legal`
 -- Filtros para la tabla `seccion`
 --
 ALTER TABLE `seccion`
-  ADD CONSTRAINT `fk_seccion_años1` FOREIGN KEY (`id_año`) REFERENCES `años` (`id_año`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_seccion_años1` FOREIGN KEY (`id_año`) REFERENCES `anios` (`id_anio`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_seccion_periodo_academico1` FOREIGN KEY (`id_periodo`) REFERENCES `periodo_academico` (`id_periodo`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_seccion_profesores1` FOREIGN KEY (`cedula_tutor`) REFERENCES `profesores` (`cedula_profesor`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 COMMIT;

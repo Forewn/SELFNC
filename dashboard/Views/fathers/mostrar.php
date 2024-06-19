@@ -1,375 +1,299 @@
-
 <?php include("../header.php") ?>
-           <!--------main-content------------->
 
+<!--------main-content------------->
 
-            <div class="main-content">
-              <div class="row">
-                
-                <div class="col-md-12">
-                <div class="table-wrapper">
-    <div class="table-title">
-      <div class="row">
-        <div class="col-sm-6 p-0 d-flex justify-content-lg-start justify-content-center">
-          <h2 class="ml-lg-2">Padres</h2>
+<div class="main-content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="table-wrapper">
+        <div class="table-title">
+          <div class="row">
+            <div class="col-sm-6 p-0 d-flex justify-content-lg-start justify-content-center">
+              <h2 class="ml-lg-2">Representantes Legales</h2>
+            </div>
+            <div class="col-sm-12 p-0 d-flex justify-content-lg-end justify-content-center">
+              <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal">
+                <i class="material-icons">&#xE147;</i>
+              </a>
+              <a href="plantilla.php" class="btn btn-danger">
+                <i class="material-icons">print</i>
+              </a>
+            </div>
+          </div>
         </div>
+        <?php 
+        require '../../Config/config.php';
 
-        <div class="col-sm-12 p-0 d-flex justify-content-lg-end justify-content-center">
-          <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal">
-          <i class="material-icons">&#xE147;</i> </a>
-
-          <a href="plantilla.php" class="btn btn-danger">
-          <i class="material-icons">print</i> </a>
-         
-        </div>
+        $sentencia = $connect->query("SELECT * FROM representante_legal");
+        $productos = $sentencia->fetchAll(PDO::FETCH_OBJ);
+        ?>
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Dirección</th>
+              <th>Sexo</th>
+              <th>Parentezco</th>
+              <th>Profesion</th>
+              <th>Editar</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach($productos as $producto){ ?>
+              <tr>
+                <td><?php echo $producto->cedula_representante_legal ?></td>
+                <td><?php echo $producto->nombre ?></td>
+                <td><?php echo $producto->telefono ?></td>
+                <td><?php echo $producto->correo ?></td>
+                <td><?php echo $producto->direccion ?></td>
+                <td><?php echo $producto->sexo == 'M' ? 'Masculino' : 'Femenino'; ?></td>
+                <td><?php 
+                    $parentezco = $connect->prepare("SELECT parentezco FROM parentezcos WHERE id_parentezco = ?");
+                    $parentezco->execute([$producto->id_parentezco]);
+                    echo $parentezco->fetchColumn();
+                ?></td>
+                <td><?php echo $producto->profesion ?></td>
+                <td>
+                  <form method='POST' action='<?php $_SERVER['PHP_SELF'] ?>'>
+                    <input type='hidden' name='cedula_representante_legal' value="<?php echo $producto->cedula_representante_legal; ?>">
+                    <button name='editar' class='btn btn-warning text-white'><i class='material-icons' data-toggle='tooltip' title='Edit'>&#xE254;</i></button>
+                  </form>
+                </td>
+                <td>
+                  <form onsubmit="return confirm('Realmente desea eliminar el registro?');" method='POST' action='<?php $_SERVER['PHP_SELF'] ?>'>
+                    <input type='hidden' name='cedula_representante_legal' value="<?php echo $producto->cedula_representante_legal; ?>">
+                    <button name='eliminar' class='btn btn-danger text-white'><i class='material-icons' title='Delete'>&#xE872;</i></button>
+                  </form>
+                </td>
+              </tr>
+            <?php } ?>
+          </tbody>
+        </table>
       </div>
     </div>
+
     <?php 
- require '../../Config/config.php';
- $productosPorPagina = 5;
-        $pagina = 1;
-            if (isset($_GET["pagina"])) {
-                $pagina = $_GET["pagina"];
-                }
-        $limit = $productosPorPagina;
-        $offset = ($pagina - 1) * $productosPorPagina;
+    // Obtener las opciones de parentezco
+    $parentezcos = $connect->query("SELECT id_parentezco, parentezco FROM parentezcos")->fetchAll(PDO::FETCH_OBJ);
 
-        $sentencia = $connect->query("SELECT count(*) AS conteo FROM padres;");
-    $conteo = $sentencia->fetchObject()->conteo;
-    $paginas = ceil($conteo / $productosPorPagina);
-    $sentencia = $connect->prepare("SELECT * FROM padres LIMIT ? OFFSET ?");
-    $sentencia->execute([$limit, $offset]);
-    $productos = $sentencia->fetchAll(PDO::FETCH_OBJ);
-       ?>
-    <table class="table table-striped table-hover">
-      <thead>
-        <tr>
-            
-          <th>Foto</th>
-          <th>Cédula</th>
-          <th>Nombre y apellido</th>
-          <th>Profesion</th>
-          <th>Correo</th>
-          <th>Teléfono</th>
-          <th>Estado</th>
-          <th>Editar</th>
-          <th>Eliminar</th>
-        </tr>
-      </thead>
-      <tbody>
-          <?php foreach($productos as $producto){ ?>
-            <tr>
-               <td><img src="../../Assets/img/subidas/<?php echo $producto->foto ?>" width='90'></td>
-               <td><?php echo $producto->dnifa ?></td>
-               <td><?php echo $producto->nomfa ?>&nbsp;
-               <td><?php echo $producto->profefa ?> </td>
-               <td><?php echo $producto->correo ?></td>
-               <td><?php echo $producto->telefa ?></td>
-               <td>
-                       
+    if (isset($_POST['editar'])){
+      $cedula_representante_legal = $_POST['cedula_representante_legal'];
+      $sql= "SELECT * FROM representante_legal WHERE cedula_representante_legal = :cedula_representante_legal"; 
+      $stmt = $connect->prepare($sql);
+      $stmt->bindParam(':cedula_representante_legal', $cedula_representante_legal, PDO::PARAM_INT); 
+      $stmt->execute();
+      $obj = $stmt->fetchObject();
+      ?>
 
-                        <?php if($producto->state==1)  { ?> 
-        <span class="badge badge-success">Activo</span>
-    <?php  }   else {?> 
-        <span class="badge badge-danger">No activo</span>
-        <?php  } ?>  
-                            
-                    </td>
-               <td>
-<form method='POST' action='<?php $_SERVER['PHP_SELF'] ?>'>
-<input type='hidden' name='idfa' value="<?php echo  $producto->idfa; ?>">
-<button name='editar' class='btn btn-warning text-white'><i class='material-icons' data-toggle='tooltip' title='Edit'>&#xE254;</i></button>
-</form>
-                   
-               </td>
-               <td>
-<form  onsubmit="return confirm('Realmente desea eliminar el registro?');" method='POST' action='<?php $_SERVER['PHP_SELF'] ?>'>
-<input type='hidden' name='idfa' value="<?php echo  $producto->idfa; ?>">
-<button name='eliminar' class='btn btn-danger text-white' ><i class='material-icons'  title='Delete'>&#xE872;</i></button>
-</form>
-               </td>
+      <div class="col-12 col-md-12"> 
 
-            </tr>
-            <?php } ?>
-      </tbody>
-    </table>
-    <nav aria-label="Page navigation example">
-            <div class="row">
-                <div class="col-xs-12 col-sm-6">
+        <form role="form" method="POST" action="<?php echo $_SERVER['PHP_SELF'] ?>">
+          <input value="<?php echo $obj->cedula_representante_legal;?>" name="cedula_representante_legal" type="hidden">
+          <div class="form-row">
 
-                    <p>Mostrando <?php echo $productosPorPagina ?> de <?php echo $conteo ?> padres disponibles</p>
-                </div>
-                <div class="col-xs-12 col-sm-6">
-                    <p>Página <?php echo $pagina ?> de <?php echo $paginas ?> </p>
-                </div>
+            <div class="form-group col-md-6">
+              <label for="cedula">Cédula</label>
+              <input value="<?php echo $obj->cedula_representante_legal;?>" maxlength="11" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" name="cedula_representante_legal" type="text" class="form-control" placeholder="Cédula">
             </div>
-            <ul class="pagination">
-                <!-- Si la página actual es mayor a uno, mostramos el botón para ir una página atrás -->
-                <?php if ($pagina > 1) { ?>
-                    <li>
-                        <a href="./mostrar.php?pagina=<?php echo $pagina - 1 ?>">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
+
+            <div class="form-group col-md-6">
+              <label for="nombre">Nombre</label>
+              <input value="<?php echo $obj->nombre;?>" name="nombre" type="text" placeholder="Nombre" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="profesion">Profesión</label>
+              <input value="<?php echo $obj->profesion;?>" name="profesion" type="text" class="form-control" placeholder="Profesión">
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="correo">Correo</label>
+              <input value="<?php echo $obj->correo;?>" name="correo" type="email" class="form-control" placeholder="Correo">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="telefono">Teléfono</label>
+              <input value="<?php echo $obj->telefono;?>" name="telefono" maxlength="15" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" type="text" class="form-control" placeholder="Teléfono móvil">
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="direccion">Dirección</label>
+              <input value="<?php echo $obj->direccion;?>" name="direccion" type="text" class="form-control" placeholder="Dirección">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="sexo">Sexo</label>
+              <select name="sexo" class="form-control">
+                <option value="M" <?php if ($obj->sexo == "M") echo "selected"; ?>>Masculino</option>
+                <option value="F" <?php if ($obj->sexo == "F") echo "selected"; ?>>Femenino</option>
+              </select>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="id_parentezco">Parentezco</label>
+              <select name="id_parentezco" class="form-control">
+                <?php foreach ($parentezcos as $parentezco) { ?>
+                  <option value="<?php echo $parentezco->id_parentezco; ?>" <?php if ($obj->id_parentezco == $parentezco->id_parentezco) echo "selected"; ?>>
+                    <?php echo $parentezco->parentezco; ?>
+                  </option>
                 <?php } ?>
+              </select>
+            </div>
+          </div>
 
-                <!-- Mostramos enlaces para ir a todas las páginas. Es un simple ciclo for-->
-                <?php for ($x = 1; $x <= $paginas; $x++) { ?>
-                    <li class="<?php if ($x == $pagina) echo "active" ?>">
-                        <a href="./mostrar.php?pagina=<?php echo $x ?>">
-                            <?php echo $x ?></a>
-                    </li>
-                <?php } ?>
-                <!-- Si la página actual es menor al total de páginas, mostramos un botón para ir una página adelante -->
-                <?php if ($pagina < $paginas) { ?>
-                    <li>
-                        <a href="./mostrar.php?pagina=<?php echo $pagina + 1 ?>">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                <?php } ?>
-            </ul>
-        </nav>
-  </div>
-</div>
+          <div class="form-group">
+            <button name="actualizar" type="submit" class="btn btn-primary btn-block">Actualizar Registro</button>
+          </div>
+        </form>
+      </div>  
 
-<?php 
+    <?php }?>
 
-if (isset($_POST['editar'])){
-$idfa = $_POST['idfa'];
-$sql= "SELECT * FROM padres WHERE idfa = :idfa"; 
-$stmt = $connect->prepare($sql);
-$stmt->bindParam(':idfa', $idfa, PDO::PARAM_INT); 
-$stmt->execute();
-$obj = $stmt->fetchObject();
- 
-?>
-
-    <div class="col-12 col-md-12"> 
-
-<form role="form" method="POST" action="<?php echo $_SERVER['PHP_SELF'] ?>">
-    <input value="<?php echo $obj->idfa;?>" name="idfa" type="hidden">
-  <div class="form-row">
-
-    <div class="form-group col-md-6">
-      <label for="nombres">Cédula</label>
-      <input value="<?php echo $obj->dnifa;?>" maxlength="8"  onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" name="dnifa" type="text" class="form-control"  placeholder="Cédula">
-    </div>
-
-    <div class="form-group col-md-6">
-      <label for="edad">Nombre y apellidos</label>
-      <input value="<?php echo $obj->nomfa;?>" name="nomfa" type="text" placeholder="Nombre y apellidos" class="form-control">
-    </div>
-  </div>
-
-
-  <div class="form-row">
-    <div class="form-group col-md-6">
-      <label for="nombres">Profesión</label>
-      <input value="<?php echo $obj->profefa;?>" name="profefa" type="text" class="form-control" placeholder="Profesión">
-    </div>
-
-    
-
-     <div class="form-group col-md-6">
-      <label for="nombres">Correo</label>
-      <input value="<?php echo $obj->correo;?>" name="correo" type="email" class="form-control" placeholder="Correo">
-    </div>
-  </div>
-
-
-    <div class="form-row">
-    <div class="form-group col-md-6">
-      <label for="nombres">Teléfono</label>
-      <input value="<?php echo $obj->telefa;?>" name="telefa" maxlength="9"  onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" type="text" class="form-control" placeholder="Teléfono móvil">
-    </div>
-
-     <div class="form-group col-md-6">
-      <label for="nombres">Dirección</label>
-      <input value="<?php echo $obj->direc;?>" name="direc" type="text" class="form-control" placeholder="Dirección">
-    </div>
-  </div>
-
-
-
-<!--
-  <div class="form-row">
-     <div class="form-group col-md-6">
-      <label for="nombres">Usuario</label>
-      <input value="<?php //echo $obj->usuario;?>" name="usuario" type="text" class="form-control" placeholder="Usuario">
-    </div>
-  </div>
--->
-      
-
-<div class="form-group">
-          <button name="actualizar" type="submit" class="btn btn-primary  btn-block">Actualizar Registro</button>
-        </>
-</form>
-    </div>  
-
-<?php }?>
- 
-<!-- add Modal HTML -->
-<div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog " role="document">
-            <form  enctype="multipart/form-data" method="POST"  autocomplete="off">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fa fa-user mr-1"></i>NUEVO
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span>&times;</span>
-                        </button>
+    <!-- add Modal HTML -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog " role="document">
+        <form method="POST" autocomplete="off">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fa fa-user mr-1"></i>NUEVO
+              </h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Cédula</label>
+                    <div class="input-group">
+                      <input type="text" name="cedula_representante_legal" maxlength="11" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" required class="form-control" placeholder="Cédula" />
                     </div>
-                    <div class="modal-body">
-                        <div class="form-row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Cédula</label>
-                                    <div class="input-group">
-                                       
-                                        <input type="text"  name="txtdni" maxlength="8" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" required class="form-control" placeholder="Cédula" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_lastname">Nombre y apellidos</label>
-                                    <div class="input-group">       
-                                        <input type="text"  name="txtnom" placeholder="Nombre y apellidos" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="form-row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Profesión</label>
-                                    <div class="input-group">
-                                       
-                                        <input type="text"  name="txtpro" required class="form-control" placeholder="Profesión" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Correo</label>
-                                    <div class="input-group">
-                                        <input type="email"  name="txtcor" required class="form-control" placeholder="Correo" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                         
-                         <div class="form-row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Teléfono</label>
-                                    <div class="input-group">
-                                        <input type="text" name="txttel" maxlength="9" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" placeholder="Teléfono" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Dirección</label>
-                                    <div class="input-group">
-                                        <input type="text" name="txtdir" placeholder="Dirección" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Foto</label>
-                                    <div class="input-group">
-                                     <input type="file" id="imagen" name="foto" onchange="readURL(this);" data-toggle="tooltip">
-                 <img id="blah"  alt="your image" style="max-width:90px;" />
-                                    </div>
-                                </div>
-                            </div>
-<!--
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Usuario</label>
-                                    <div class="input-group">
-                                        <input type="text" name="txtusu" placeholder="Usuario" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_firstname">Contraseña</label>
-                                    <div class="input-group">
-                                        <input type="password" name="txtcla" placeholder="Contraseña" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="modal_contact_lastname">Permisos</label>
-                                    <div class="input-group">
-                                        <select class="form-control" required name="txtrol">
-                                          <option selected>SELECCIONE</option>
-                                          <option value="3">Padre</option>
-                                   
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    
-                    </div>
-                          -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCELAR</button>
-                        <button  name='agregar' class="btn btn-primary">GUARDAR</button>
-                    </div>
+                  </div>
                 </div>
-            </form>
-        </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_lastname">Nombre</label>
+                    <div class="input-group">
+                      <input type="text" name="nombre" placeholder="Nombre" required class="form-control"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Profesión</label>
+                    <div class="input-group">
+                      <input type="text" name="profesion" required class="form-control" placeholder="Profesión" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Correo</label>
+                    <div class="input-group">
+                      <input type="email" name="correo" required class="form-control" placeholder="Correo" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Teléfono</label>
+                    <div class="input-group">
+                      <input type="text" name="telefono" maxlength="15" onKeypress="if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" placeholder="Teléfono" required class="form-control"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Dirección</label>
+                    <div class="input-group">
+                      <input type="text" name="direccion" placeholder="Dirección" required class="form-control"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Sexo</label>
+                    <div class="input-group">
+                      <select name="sexo" class="form-control" required>
+                        
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="modal_contact_firstname">Parentezco</label>
+                    <div class="input-group">
+                      <select name="id_parentezco" class="form-control" required>
+                        <?php foreach ($parentezcos as $parentezco) { ?>
+                          <option value="<?php echo $parentezco->id_parentezco; ?>">
+                            <?php echo $parentezco->parentezco; ?>
+                          </option>
+                        <?php } ?>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCELAR</button>
+              <button name='agregar' class="btn btn-primary">GUARDAR</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
 
-<!-- Edit Modal HTML -->
+  </div>
 </div>
-        </div>
-		   
-</div>
-</div>
+
 <!----------html code compleate----------->
-  
-     <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-   <script src="../../Assets/js/jquery-3.3.1.slim.min.js"></script>
-   <script src="../../Assets/js/popper.min.js"></script>
-   <script src="../../Assets/js/bootstrap-1.min.js"></script>
-   <script src="../../Assets/js/jquery-3.3.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-  <script type="text/javascript">
-		$(document).ready(function(){
-		  $(".xp-menubar").on('click',function(){
-		    $('#sidebar').toggleClass('active');
-			$('#content').toggleClass('active');
-		  });
-		  
-		   $(".xp-menubar,.body-overlay").on('click',function(){
-		     $('#sidebar,.body-overlay').toggleClass('show-nav');
-		   });
-		  
-		});
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="../../Assets/js/jquery-3.3.1.slim.min.js"></script>
+<script src="../../Assets/js/popper.min.js"></script>
+<script src="../../Assets/js/bootstrap-1.min.js"></script>
+<script src="../../Assets/js/jquery-3.3.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $(".xp-menubar").on('click',function(){
+      $('#sidebar').toggleClass('active');
+      $('#content').toggleClass('active');
+    });
+
+    $(".xp-menubar,.body-overlay").on('click',function(){
+      $('#sidebar,.body-overlay').toggleClass('show-nav');
+    });
+  });
 </script>
 <script type="text/javascript">
 
@@ -378,228 +302,127 @@ $obj = $stmt->fetchObject();
 
 <?php  
 
- if(isset($_POST['agregar']))
- {
-  //$username = $_POST['user_name'];// user name
-  //$userjob = $_POST['user_job'];// user email
+if(isset($_POST['agregar'])) {
+  $cedula_representante_legal = $_POST['cedula_representante_legal'];
+  $nombre = $_POST['nombre'];
+  $profesion = $_POST['profesion'];
+  $correo = $_POST['correo'];
+  $telefono = $_POST['telefono'];
+  $direccion = $_POST['direccion'];
+  $sexo = $_POST['sexo'];
+  $id_parentezco = $_POST['id_parentezco'];
 
+  if(empty($cedula_representante_legal)){
+    $errMSG = "Please enter your cedula.";
+  } else if(empty($nombre)){
+    $errMSG = "Please enter your name.";
+  } else if(empty($profesion)){
+    $errMSG = "Please enter your profession.";
+  } else if(empty($correo)){
+    $errMSG = "Please enter your email.";
+  } else if(empty($telefono)){
+    $errMSG = "Please enter your phone.";
+  } else if(empty($direccion)){
+    $errMSG = "Please enter your address.";
+  } else if(empty($sexo)){
+    $errMSG = "Please enter your sexo.";
+  } else if(empty($id_parentezco)){
+    $errMSG = "Please enter your parentezco.";
+  } else {
+    $stmt = $connect->prepare("INSERT INTO representante_legal (cedula_representante_legal, nombre, profesion, correo, telefono, direccion, sexo, id_parentezco) VALUES (:cedula_representante_legal, :nombre, :profesion, :correo, :telefono, :direccion, :sexo, :id_parentezco)");
+    $stmt->bindParam(':cedula_representante_legal', $cedula_representante_legal);
+    $stmt->bindParam(':nombre', $nombre);
+    $stmt->bindParam(':profesion', $profesion);
+    $stmt->bindParam(':correo', $correo);
+    $stmt->bindParam(':telefono', $telefono);
+    $stmt->bindParam(':direccion', $direccion);
+    $stmt->bindParam(':sexo', $sexo);
+    $stmt->bindParam(':id_parentezco', $id_parentezco);
 
-    $dnifa=$_POST['txtdni'];
-    $nomfa=$_POST['txtnom'];
-    $profefa=$_POST['txtpro'];
-    $correo=$_POST['txtcor'];
-    $telefa=$_POST['txttel'];
-    $direc=$_POST['txtdir'];
-
-  
-    $imgFile = $_FILES['foto']['name'];
-    $tmp_dir = $_FILES['foto']['tmp_name'];
-    $imgSize = $_FILES['foto']['size'];
-/*
-    $usuario=$_POST['txtusu'];
-    $clave=MD5($_POST['txtcla']);
-    $rol=$_POST['txtrol'];
-  */
-  
-  if(empty($dnifa)){
-   $errMSG = "Please enter your dni.";
-  }
-  else if(empty($nomfa)){
-   $errMSG = "Please Enter your name.";
-  }
-  else if(empty($profefa)){
-   $errMSG = "Please Enter your profession.";
-  }
-  else if(empty($correo)){
-   $errMSG = "Please Enter your email.";
-  }
-
-  else if(empty($telefa)){
-   $errMSG = "Please Enter your phone.";
-  }
-
-  else if(empty($direc)){
-   $errMSG = "Please Enter your address.";
-  }
-
-  else if(empty($imgFile)){
-   $errMSG = "Please Select Image File.";
-  }
-  /*
-  else if(empty($usuario)){
-   $errMSG = "Please Enter your user.";
-  }
-
-  else if(empty($clave)){
-   $errMSG = "Please Enter your password.";
-  }
-  else if(empty($rol)){
-   $errMSG = "Please Enter your permission.";
-  }*/
-  else
-  {
-   $upload_dir = '../../Assets/img/subidas/'; // upload directory
- 
-   $imgExt = strtolower(pathinfo($imgFile,PATHINFO_EXTENSION)); // get image extension
-  
-   // valid image extensions
-   $valid_extensions = array('jpeg', 'jpg', 'png', 'gif'); // valid extensions
-  
-   // rename uploading image
-   $foto = rand(1000,1000000).".".$imgExt;
-    
-   // allow valid image file formats
-   if(in_array($imgExt, $valid_extensions)){   
-    // Check file size '5MB'
-    if($imgSize < 5000000)    {
-     move_uploaded_file($tmp_dir,$upload_dir.$foto);
+    if($stmt->execute()) {
+      echo '<script type="text/javascript">
+      swal("¡Registrado!", "Agregado correctamente", "success").then(function() {
+        window.location = "mostrar.php";
+      });
+      </script>';
+    } else {
+      $errMSG = "Error while inserting....";
     }
-    else{
-     $errMSG = "Sorry, your file is too large.";
-    }
-   }
-   else{
-    $errMSG = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";  
-   }
   }
-  
-  
-  // if no error occured, continue ....
-  if(!isset($errMSG))
-  {
-   $stmt = $connect->prepare("INSERT INTO padres(dnifa, nomfa, profefa, correo, telefa,direc,foto, state) VALUES(:dnifa, :nomfa,:profefa,:correo,:telefa,:direc,:foto,'1')");
-   $stmt->bindParam(':dnifa',$dnifa);
-   $stmt->bindParam(':nomfa',$nomfa);
-   $stmt->bindParam(':profefa',$profefa);
-   $stmt->bindParam(':correo',$correo);
-   $stmt->bindParam(':telefa',$telefa);
-   $stmt->bindParam(':direc',$direc);
-   $stmt->bindParam(':foto',$foto);
-  /* $stmt->bindParam(':usuario',$usuario);
-   $stmt->bindParam(':clave',$clave);
-   $stmt->bindParam(':rol',$rol);
-   */
-  
-   if($stmt->execute())
-   {
-    echo '<script type="text/javascript">
-swal("¡Registrado!", "Agregado correctamente", "success").then(function() {
-            window.location = "mostrar.php";
-        });
-        </script>';
-   }
-   else
-   {
-    $errMSG = "error while inserting....";
-   }
-
-  }
- }
+}
 ?>
 
-
-
 <script type="text/javascript">
-$(document).ready(function() {
+  $(document).ready(function() {
     setTimeout(function() {
-        $(".content").fadeOut(1500);
+      $(".content").fadeOut(1500);
     },3000);
-
-});
+  });
 </script>
-
 
 <?php  
 if(isset($_POST['eliminar'])){
-////////////// Actualizar la tabla /////////
-$consulta = "DELETE FROM `padres` WHERE `idfa`=:idfa";
-$sql = $connect-> prepare($consulta);
-$sql -> bindParam(':idfa', $idfa, PDO::PARAM_INT);
-$idfa=trim($_POST['idfa']);
-$sql->execute();
+  //////////// Actualizar la tabla /////////
+  $consulta = "DELETE FROM `representante_legal` WHERE `cedula_representante_legal`=:cedula_representante_legal";
+  $sql = $connect-> prepare($consulta);
+  $sql -> bindParam(':cedula_representante_legal', $cedula_representante_legal, PDO::PARAM_INT);
+  $cedula_representante_legal=trim($_POST['cedula_representante_legal']);
+  $sql->execute();
 
-if($sql->rowCount() > 0)
-{
-$count = $sql -> rowCount();
-echo '<script type="text/javascript">
-swal("¡Eliminado!", "Eliminado correctamente", "success").then(function() {
-            window.location = "mostrar.php";
-        });
-        </script>';
-}
-else{
+  if($sql->rowCount() > 0) {
+    $count = $sql -> rowCount();
+    echo '<script type="text/javascript">
+    swal("¡Eliminado!", "Eliminado correctamente", "success").then(function() {
+      window.location = "mostrar.php";
+    });
+    </script>';
+  } else {
     echo "<div class='content alert alert-danger'> No se pudo eliminar el registro  </div>";
-
-print_r($sql->errorInfo()); 
+    print_r($sql->errorInfo()); 
+  }
 }
-}// Cierra envio de guardado
-?>
-  
+?>  
 
-
-  <?php
-    
+<?php
 if(isset($_POST['actualizar'])){
-///////////// Informacion enviada por el formulario /////////////
-$idfa=trim($_POST['idfa']);
-$dnifa=trim($_POST['dnifa']);
-$nomfa=trim($_POST['nomfa']);
-$profefa=trim($_POST['profefa']);
-$correo=trim($_POST['correo']);
-$telefa=trim($_POST['telefa']);
-$direc=trim($_POST['direc']);
-//$usuario=trim($_POST['usuario']);
+  ///////////// Informacion enviada por el formulario /////////////
+  $cedula_representante_legal=trim($_POST['cedula_representante_legal']);
+  $nombre=trim($_POST['nombre']);
+  $profesion=trim($_POST['profesion']);
+  $correo=trim($_POST['correo']);
+  $telefono=trim($_POST['telefono']);
+  $direccion=trim($_POST['direccion']);
+  $sexo=trim($_POST['sexo']);
+  $id_parentezco=trim($_POST['id_parentezco']);
 
-///////// Fin informacion enviada por el formulario /// 
+  ////////// Fin informacion enviada por el formulario /// 
 
-////////////// Actualizar la tabla /////////
-$consulta = "UPDATE padres
-SET `dnifa`= :dnifa, `nomfa` = :nomfa, `profefa` = :profefa, `correo` = :correo, `telefa` = :telefa, `direc` = :direc WHERE `idfa` = :idfa";
-$sql = $connect->prepare($consulta);
-$sql->bindParam(':dnifa',$dnifa,PDO::PARAM_STR, 25);
-$sql->bindParam(':nomfa',$nomfa,PDO::PARAM_STR, 25);
-$sql->bindParam(':profefa',$profefa,PDO::PARAM_STR,25);
-$sql->bindParam(':correo',$correo,PDO::PARAM_STR,25);
-$sql->bindParam(':telefa',$telefa,PDO::PARAM_STR,25);
-$sql->bindParam(':direc',$direc,PDO::PARAM_STR,25);
-//$sql->bindParam(':usuario',$usuario,PDO::PARAM_STR,25);
-$sql->bindParam(':idfa',$idfa,PDO::PARAM_INT);
+  ////////////// Actualizar la tabla /////////
+  $consulta = "UPDATE representante_legal SET `nombre` = :nombre, `profesion` = :profesion, `correo` = :correo, `telefono` = :telefono, `direccion` = :direccion, `sexo` = :sexo, `id_parentezco` = :id_parentezco WHERE `cedula_representante_legal` = :cedula_representante_legal";
+  $sql = $connect->prepare($consulta);
+  $sql->bindParam(':nombre',$nombre,PDO::PARAM_STR, 45);
+  $sql->bindParam(':profesion',$profesion,PDO::PARAM_STR, 50);
+  $sql->bindParam(':correo',$correo,PDO::PARAM_STR);
+  $sql->bindParam(':telefono',$telefono,PDO::PARAM_STR,15);
+  $sql->bindParam(':direccion',$direccion,PDO::PARAM_STR);
+  $sql->bindParam(':sexo',$sexo,PDO::PARAM_STR,2);
+  $sql->bindParam(':id_parentezco',$id_parentezco,PDO::PARAM_INT);
+  $sql->bindParam(':cedula_representante_legal',$cedula_representante_legal,PDO::PARAM_INT);
 
-$sql->execute();
+  $sql->execute();
 
-if($sql->rowCount() > 0)
-{
-$count = $sql -> rowCount();
-echo '<script type="text/javascript">
-swal("¡Actualizado!", "Actualizado correctamente", "success").then(function() {
-            window.location = "mostrar.php";
-        });
-        </script>';
+  if($sql->rowCount() > 0) {
+    $count = $sql -> rowCount();
+    echo '<script type="text/javascript">
+    swal("¡Actualizado!", "Actualizado correctamente", "success").then(function() {
+      window.location = "mostrar.php";
+    });
+    </script>';
+  } else {
+    echo "<div class='content alert alert-danger'> No se pudo actualizar el registro  </div>";
+    print_r($sql->errorInfo()); 
+  }
 }
-else{
-    echo "<div class='content alert alert-danger'> No se pudo actulizar el registro  </div>";
-
-print_r($sql->errorInfo()); 
-}
-}// Cierra envio de guardado
 ?>
-
-<script>
-   function readURL(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-
-                reader.onload = function (e) {
-                    $('#blah')
-                        .attr('src', e.target.result);
-                };
-
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-  </script>
-  </body>
-  
-  </html>
-
-
+</body>
+</html>
